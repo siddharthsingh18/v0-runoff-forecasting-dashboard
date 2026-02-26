@@ -18,6 +18,15 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
+// Request interceptor to add JWT token
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,
@@ -31,6 +40,14 @@ apiClient.interceptors.response.use(
 );
 
 export const api = {
+  /**
+   * Authenticate user
+   */
+  async login(email: string, password: string) {
+    const response = await apiClient.post('/auth/login', { email, password });
+    return response.data;
+  },
+
   /**
    * Check health status of the backend
    */
@@ -60,6 +77,24 @@ export const api = {
    */
   async getLatestMetrics(): Promise<TrainResponse> {
     const response = await apiClient.get<TrainResponse>('/metrics/latest');
+    return response.data;
+  },
+
+  /**
+   * Get model registry
+   */
+  async getModelRegistry() {
+    const response = await apiClient.get('/models/registry');
+    return response.data;
+  },
+
+  /**
+   * Upload dataset
+   */
+  async uploadDataset(formData: FormData) {
+    const response = await apiClient.post('/dataset/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
 };

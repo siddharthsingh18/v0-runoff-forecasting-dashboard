@@ -54,3 +54,49 @@ export interface ApiError {
   message: string;
   status: number;
 }
+
+export interface MetricCardProps {
+  label: string
+  value: string | number
+  unit?: string
+  icon?: React.ReactNode
+  trend?: 'up' | 'down' | 'neutral'
+}
+
+export interface DatasetStats {
+  rows: number
+  columns: number
+  missing_values: number
+  feature_count: number
+}
+
+export interface ChartDataPoint {
+  date: string
+  actual: number
+  predicted: number
+  residual?: number
+}
+
+export interface FeatureImportance {
+  feature: string
+  importance: number
+}
+
+export interface TrainingStatus {
+  status: 'completed' | 'running' | 'failed' | 'pending'
+  progress: number
+  message: string
+}
+
+export interface AuthResponse {
+  token: string
+  user: {
+    id: string
+    email: string
+  }
+}
+
+export interface LoginCredentials {
+  email: string
+  password: string
+}

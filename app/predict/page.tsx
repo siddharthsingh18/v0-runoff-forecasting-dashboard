@@ -1,201 +1,225 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Navbar } from '@/components/Navbar';
-import { Sidebar } from '@/components/Sidebar';
-import { PredictionForm } from '@/components/PredictionForm';
-import { PredictionChart } from '@/components/PredictionChart';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { MetricCard } from '@/components/MetricCard';
-import api from '@/lib/api';
-import { PredictRequest, PredictionResult } from '@/lib/types';
-import { Cloud, Droplets } from 'lucide-react';
-import { toast } from 'sonner';
-
-interface PredictionHistory {
-  index: number;
-  actual: number;
-  predicted: number;
-}
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { predictionSchema, type PredictionData } from '@/lib/validators'
+import { Navbar } from '@/components/layout/Navbar'
+import { Sidebar } from '@/components/layout/Sidebar'
+import { SectionCard } from '@/components/ui/SectionCard'
+import { GlowButton } from '@/components/ui/GlowButton'
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { motion } from 'framer-motion'
+import { Zap, TrendingUp } from 'lucide-react'
+import { toast } from 'sonner'
+import api from '@/lib/api'
 
 export default function PredictPage() {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<PredictionResult | null>(null);
-  const [history, setHistory] = useState<PredictionHistory[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [isPredicting, setIsPredicting] = useState(false)
+  const [prediction, setPrediction] = useState<number | null>(null)
+  const [confidence, setConfidence] = useState<number | null>(null)
 
-  const handlePrediction = async (formData: PredictRequest) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PredictionData>({
+    resolver: zodResolver(predictionSchema),
+    defaultValues: {
+      rainfall: 50,
+      temperature: 20,
+      humidity: 60,
+      previous_runoff: 30,
+    },
+  })
+
+  const onSubmit = async (data: PredictionData) => {
+    setIsPredicting(true)
+    setPrediction(null)
+    setConfidence(null)
+
     try {
-      setLoading(true);
-      setError(null);
-
-      const response = await api.predict(formData);
-      setResult(response);
-
-      // Add to history
-      setHistory((prev) => [
-        ...prev,
-        {
-          index: prev.length,
-          actual: formData.rainfall,
-          predicted: response.predicted_runoff,
-        },
-      ]);
-
-      toast.success('Prediction generated successfully!');
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to generate prediction';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      console.error('Prediction error:', err);
+      const result = await api.predict(data)
+      setPrediction(result.predicted_runoff)
+      setConfidence(result.confidence)
+      toast.success('Prediction successful!')
+    } catch (error: any) {
+      toast.error(error.message || 'Prediction failed')
     } finally {
-      setLoading(false);
+      setIsPredicting(false)
     }
-  };
-
-  const confidenceLevel = result
-    ? result.confidence > 0.8
-      ? 'High'
-      : result.confidence > 0.5
-      ? 'Medium'
-      : 'Low'
-    : 'N/A';
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen">
       <Navbar />
       <Sidebar />
 
-      <main className="lg:mr-64 px-4 sm:px-6 lg:px-8 py-12">
-        <div className="max-w-6xl mx-auto space-y-8">
-          {/* Header */}
+      <main className="ml-64 px-8 py-12">
+        <div className="max-w-7xl space-y-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl font-bold text-white mb-2">Predict Runoff</h1>
-            <p className="text-gray-400">
-              Generate 3-day ahead runoff forecasts using environmental features
+            <h1 className="text-4xl font-bold text-white mb-2">Make Predictions</h1>
+            <p className="text-white/60">
+              Generate 3-day ahead runoff forecasts with confidence intervals
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Form Section */}
-            <div className="lg:col-span-1">
-              <PredictionForm onSubmit={handlePrediction} loading={loading} />
-            </div>
+            <SectionCard title="Input Features" delay={0.1}>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div>
+                  <Label htmlFor="rainfall" className="text-white mb-2 block text-sm">
+                    Rainfall (mm)
+                  </Label>
+                  <Input
+                    id="rainfall"
+                    type="number"
+                    step="0.1"
+                    {...register('rainfall', { valueAsNumber: true })}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                  {errors.rainfall && (
+                    <p className="text-red-400 text-xs mt-1">{errors.rainfall.message}</p>
+                  )}
+                </div>
 
-            {/* Results Section */}
-            <div className="lg:col-span-2 space-y-6">
-              {loading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="p-12 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md flex justify-center"
-                >
-                  <LoadingSpinner size="lg" text="Generating prediction..." />
-                </motion.div>
-              )}
+                <div>
+                  <Label htmlFor="temperature" className="text-white mb-2 block text-sm">
+                    Temperature (°C)
+                  </Label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    step="0.1"
+                    {...register('temperature', { valueAsNumber: true })}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                  {errors.temperature && (
+                    <p className="text-red-400 text-xs mt-1">{errors.temperature.message}</p>
+                  )}
+                </div>
 
-              {error && !loading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-6 rounded-2xl bg-red-500/10 border border-red-500/30 backdrop-blur-md"
-                >
-                  <p className="text-red-300">{error}</p>
-                </motion.div>
-              )}
+                <div>
+                  <Label htmlFor="humidity" className="text-white mb-2 block text-sm">
+                    Humidity (%)
+                  </Label>
+                  <Input
+                    id="humidity"
+                    type="number"
+                    step="0.1"
+                    {...register('humidity', { valueAsNumber: true })}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                  {errors.humidity && (
+                    <p className="text-red-400 text-xs mt-1">{errors.humidity.message}</p>
+                  )}
+                </div>
 
-              {result && !loading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="space-y-6"
+                <div>
+                  <Label htmlFor="previous_runoff" className="text-white mb-2 block text-sm">
+                    Previous Runoff (mm)
+                  </Label>
+                  <Input
+                    id="previous_runoff"
+                    type="number"
+                    step="0.1"
+                    {...register('previous_runoff', { valueAsNumber: true })}
+                    className="bg-white/5 border-white/10 text-white"
+                  />
+                  {errors.previous_runoff && (
+                    <p className="text-red-400 text-xs mt-1">{errors.previous_runoff.message}</p>
+                  )}
+                </div>
+
+                <GlowButton
+                  type="submit"
+                  disabled={isPredicting}
+                  className="w-full mt-6"
+                  glowIntensity="high"
                 >
-                  {/* Prediction Result */}
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    className="p-8 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/40 backdrop-blur-md"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-xl font-semibold text-white">Predicted Runoff</h3>
-                      <Droplets className="w-8 h-8 text-cyan-400" />
+                  {isPredicting ? (
+                    <div className="flex items-center gap-2">
+                      <LoadingSpinner size="sm" />
+                      <span>Predicting...</span>
                     </div>
-                    <div className="space-y-3">
-                      <div>
-                        <p className="text-sm text-gray-300 mb-1">3-Day Ahead Runoff</p>
-                        <p className="text-5xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                          {result.predicted_runoff.toFixed(2)}
-                          <span className="text-xl ml-2 text-gray-400">mm</span>
-                        </p>
-                      </div>
-                      <div className="flex gap-6">
-                        <div>
-                          <p className="text-xs text-gray-400 mb-1">Confidence</p>
-                          <p className="text-lg font-semibold text-white">
-                            {(result.confidence * 100).toFixed(1)}%
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-400 mb-1">Confidence Level</p>
-                          <p
-                            className={`text-lg font-semibold ${
-                              confidenceLevel === 'High'
-                                ? 'text-green-400'
-                                : confidenceLevel === 'Medium'
-                                ? 'text-yellow-400'
-                                : 'text-red-400'
-                            }`}
-                          >
-                            {confidenceLevel}
-                          </p>
-                        </div>
-                      </div>
-                      <p className="text-xs text-gray-400">
-                        Generated at:{' '}
-                        {new Date(result.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                  </motion.div>
-
-                  {/* Prediction History Chart */}
-                  {history.length > 0 && (
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-white mb-1">
-                          Prediction Trend
-                        </h3>
-                        <p className="text-sm text-gray-400">
-                          Historical predictions from this session
-                        </p>
-                      </div>
-                      <PredictionChart data={history} />
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-5 h-5" />
+                      <span>Generate Prediction</span>
                     </div>
                   )}
+                </GlowButton>
+              </form>
+            </SectionCard>
+
+            <div className="lg:col-span-2">
+              {prediction !== null && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="space-y-6"
+                >
+                  <SectionCard title="Prediction Result" delay={0.2}>
+                    <div className="space-y-6">
+                      <div className="text-center">
+                        <p className="text-white/60 text-sm mb-2">Predicted Runoff</p>
+                        <p className="text-5xl font-bold bg-gradient-to-r from-cyan-400 to-purple-600 bg-clip-text text-transparent">
+                          {prediction.toFixed(2)}
+                        </p>
+                        <p className="text-white/60 text-sm mt-2">mm</p>
+                      </div>
+
+                      {confidence && (
+                        <div className="pt-6 border-t border-white/10">
+                          <p className="text-white/60 text-sm mb-3">Confidence Level</p>
+                          <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-cyan-400 to-purple-600"
+                                style={{ width: `${confidence * 100}%` }}
+                              />
+                            </div>
+                            <p className="text-white font-semibold">{(confidence * 100).toFixed(1)}%</p>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="pt-6 border-t border-white/10">
+                        <button
+                          onClick={() => {
+                            setPrediction(null)
+                            setConfidence(null)
+                          }}
+                          className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                        >
+                          Make another prediction
+                        </button>
+                      </div>
+                    </div>
+                  </SectionCard>
                 </motion.div>
               )}
 
-              {!loading && !result && !error && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-12 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md text-center"
-                >
-                  <Cloud className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                  <p className="text-gray-400">
-                    Fill in the environmental parameters and submit to generate a prediction
-                  </p>
-                </motion.div>
+              {prediction === null && (
+                <SectionCard title="Ready for Prediction" delay={0.2}>
+                  <div className="text-center py-12">
+                    <TrendingUp className="w-12 h-12 text-cyan-400/50 mx-auto mb-4" />
+                    <p className="text-white/60 text-sm">
+                      Fill in the input features and click Generate Prediction
+                    </p>
+                  </div>
+                </SectionCard>
               )}
             </div>
           </div>
         </div>
       </main>
     </div>
-  );
+  )
 }

@@ -1,162 +1,172 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Navbar } from '@/components/Navbar';
-import { ArrowRight, Zap, Brain, BarChart3, Gauge } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import Link from 'next/link'
+import { useModelStore } from '@/store/useModelStore'
+import { GlowButton } from '@/components/ui/GlowButton'
+import { motion } from 'framer-motion'
+import { BarChart3, Brain, Zap, TrendingUp } from 'lucide-react'
+import { Navbar } from '@/components/layout/Navbar'
+import { Footer } from '@/components/layout/Footer'
 
 const features = [
   {
     icon: Brain,
-    title: 'Model Auto-Tuning',
-    description: 'Automatically tune hyperparameters using grid or randomized search',
-  },
-  {
-    icon: Zap,
-    title: 'Hyperparameter Optimization',
-    description: 'Find optimal parameters for Random Forest and XGBoost models',
+    title: 'AI-Powered Forecasting',
+    description: 'Advanced machine learning models trained on historical runoff data',
   },
   {
     icon: BarChart3,
-    title: 'Interactive Visualizations',
-    description: 'View predictions, metrics, and model comparisons in real-time',
+    title: 'Advanced Analytics',
+    description: 'Comprehensive dashboards and visualizations for data-driven insights',
   },
   {
-    icon: Gauge,
-    title: 'Real-time Prediction API',
-    description: '3-day ahead runoff forecasting with high accuracy metrics',
+    icon: Zap,
+    title: 'Real-Time Predictions',
+    description: '3-day ahead runoff predictions with confidence intervals',
   },
-];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
+  {
+    icon: TrendingUp,
+    title: 'Model Performance',
+    description: 'Track RMSE, MAE, R², and NSE metrics across multiple models',
   },
-};
+]
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
+export default function HomePage() {
+  const isAuthenticated = useModelStore((state) => state.isAuthenticated)
 
-export default function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
+    <>
       <Navbar />
-
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-32 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 opacity-50">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
-          <div className="absolute top-40 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse animation-delay-2000" />
-        </div>
-
-        <div className="relative max-w-6xl mx-auto text-center">
+      <main className="min-h-screen">
+        {/* Hero Section */}
+        <section className="relative px-6 py-24 overflow-hidden">
+          {/* Animated background elements */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                AI-Based Runoff
-              </span>
-              <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">
-                Forecasting Platform
-              </span>
-            </h1>
-
-            <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Advanced machine learning models for 3-day ahead prediction with
-              real-time hyperparameter optimization and interactive analytics.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link href="/dashboard">
-                  <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-6 text-lg rounded-lg transition-all flex items-center gap-2">
-                    Go to Dashboard
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                </Link>
-              </motion.div>
-
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                <Link href="/train">
-                  <Button className="bg-white/10 hover:bg-white/20 text-white px-8 py-6 text-lg rounded-lg border border-white/20 transition-all flex items-center gap-2">
-                    Train Model
-                    <Zap className="w-5 h-5" />
-                  </Button>
-                </Link>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+            animate={{
+              x: [0, 100, -100, 0],
+              y: [0, -100, 100, 0],
+            }}
+            transition={{ duration: 20, repeat: Infinity }}
+            className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"
+          />
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={{
+              x: [0, -100, 100, 0],
+              y: [0, 100, -100, 0],
+            }}
+            transition={{ duration: 20, repeat: Infinity }}
+            className="absolute -bottom-40 -right-40 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl"
+          />
+
+          <div className="relative z-10 max-w-7xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h1 className="text-6xl md:text-7xl font-bold mb-6">
+                <span className="bg-gradient-to-r from-cyan-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent">
+                  Advanced Runoff Forecasting
+                </span>
+              </h1>
+              <p className="text-xl text-white/70 mb-8 max-w-2xl mx-auto">
+                Predict water runoff 3 days in advance with state-of-the-art machine learning models
+              </p>
+              <div className="flex gap-4 justify-center">
+                {isAuthenticated ? (
+                  <Link href="/dashboard">
+                    <GlowButton size="lg" glowIntensity="high">
+                      Go to Dashboard
+                    </GlowButton>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/login">
+                      <GlowButton size="lg" glowIntensity="high">
+                        Sign In
+                      </GlowButton>
+                    </Link>
+                    <Link href="/login">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <button className="px-8 py-3 rounded-lg border border-cyan-500/50 text-white font-semibold hover:bg-cyan-500/10 transition-colors">
+                          Learn More
+                        </button>
+                      </motion.div>
+                    </Link>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="px-6 py-20 max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
             transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
+            className="mb-16 text-center"
           >
             <h2 className="text-4xl font-bold text-white mb-4">
-              Powerful Features
+              Powerful Features for Runoff Forecasting
             </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Everything you need for advanced forecasting and model optimization
+            <p className="text-white/60 text-lg">
+              Everything you need for accurate water runoff prediction
             </p>
           </motion.div>
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {features.map((feature, idx) => {
-              const Icon = feature.icon;
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {features.map((feature, index) => {
+              const Icon = feature.icon
               return (
                 <motion.div
-                  key={idx}
-                  variants={itemVariants}
-                  whileHover={{ y: -4, boxShadow: '0 20px 25px -5rgba(0, 0, 0, 0.2)' }}
-                  className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/8 transition-all"
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="glass rounded-lg p-8 border border-white/10 hover:border-cyan-500/30 transition-colors"
                 >
-                  <div className="mb-4 p-3 rounded-lg bg-indigo-500/20 w-fit">
-                    <Icon className="w-6 h-6 text-indigo-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <Icon className="w-12 h-12 text-cyan-400 mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-sm text-gray-400">{feature.description}</p>
+                  <p className="text-white/60">{feature.description}</p>
                 </motion.div>
-              );
+              )
             })}
-          </motion.div>
-        </div>
-      </section>
+          </div>
+        </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto text-center">
-          <p className="text-gray-500">
-            © 2025 Runoff AI Platform. Built with advanced machine learning.
-          </p>
-        </div>
-      </footer>
-    </div>
-  );
+        {/* CTA Section */}
+        {!isAuthenticated && (
+          <section className="px-6 py-20 max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+              className="glass rounded-lg p-12 border border-cyan-500/20 text-center"
+            >
+              <h2 className="text-3xl font-bold text-white mb-4">
+                Ready to get started?
+              </h2>
+              <p className="text-white/60 mb-8">
+                Join thousands of users using RunoffAI for accurate runoff forecasting
+              </p>
+              <Link href="/login">
+                <GlowButton size="lg" glowIntensity="high">
+                  Sign In Now
+                </GlowButton>
+              </Link>
+            </motion.div>
+          </section>
+        )}
+      </main>
+
+      <Footer />
+    </>
+  )
 }
