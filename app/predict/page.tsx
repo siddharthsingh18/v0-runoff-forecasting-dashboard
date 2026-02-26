@@ -11,7 +11,6 @@ import { GlowButton } from '@/components/ui/GlowButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Slider } from '@/components/ui/slider'
 import { PredictionGauge } from '@/components/prediction/PredictionGauge'
 import { motion } from 'framer-motion'
 import { Zap, TrendingUp, AlertTriangle, Droplets, Thermometer, Wind } from 'lucide-react'
@@ -22,13 +21,6 @@ export default function PredictPage() {
   const [isPredicting, setIsPredicting] = useState(false)
   const [prediction, setPrediction] = useState<number | null>(null)
   const [confidence, setConfidence] = useState<number | null>(null)
-  const [floodProbability, setFloodProbability] = useState(0)
-  const [formValues, setFormValues] = useState({
-    rainfall: 50,
-    temperature: 20,
-    humidity: 60,
-    previous_runoff: 30,
-  })
 
   const {
     register,
@@ -56,12 +48,8 @@ export default function PredictPage() {
     return Math.round(rainfallFactor + humiditySaturation + runoffFactor)
   }
 
-  // Update probability when form values change
-  useEffect(() => {
-    setFormValues(watchValues as any)
-    const probability = calculateFloodProbability(watchValues as PredictionData)
-    setFloodProbability(probability)
-  }, [watchValues])
+  // Calculate probability directly from watched values (no state update to avoid loops)
+  const floodProbability = calculateFloodProbability(watchValues as PredictionData)
 
   const onSubmit = async (data: PredictionData) => {
     setIsPredicting(true)
@@ -139,19 +127,8 @@ export default function PredictPage() {
                     type="number"
                     step="0.1"
                     {...register('rainfall', { valueAsNumber: true })}
-                    className="bg-white/5 border-white/10 text-white mb-2"
+                    className="bg-white/5 border-white/10 text-white"
                   />
-                  <Slider
-                    defaultValue={[50]}
-                    min={0}
-                    max={300}
-                    step={5}
-                    onValueChange={(val) => {
-                      register('rainfall', { valueAsNumber: true })
-                    }}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-white/50 mt-1">{formValues.rainfall.toFixed(1)} mm</p>
                   {errors.rainfall && (
                     <p className="text-red-400 text-xs mt-1">{errors.rainfall.message}</p>
                   )}
@@ -170,16 +147,8 @@ export default function PredictPage() {
                     type="number"
                     step="0.1"
                     {...register('temperature', { valueAsNumber: true })}
-                    className="bg-white/5 border-white/10 text-white mb-2"
+                    className="bg-white/5 border-white/10 text-white"
                   />
-                  <Slider
-                    defaultValue={[20]}
-                    min={0}
-                    max={50}
-                    step={1}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-white/50 mt-1">{formValues.temperature.toFixed(1)}°C</p>
                   {errors.temperature && (
                     <p className="text-red-400 text-xs mt-1">{errors.temperature.message}</p>
                   )}
@@ -198,16 +167,8 @@ export default function PredictPage() {
                     type="number"
                     step="0.1"
                     {...register('humidity', { valueAsNumber: true })}
-                    className="bg-white/5 border-white/10 text-white mb-2"
+                    className="bg-white/5 border-white/10 text-white"
                   />
-                  <Slider
-                    defaultValue={[60]}
-                    min={0}
-                    max={100}
-                    step={5}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-white/50 mt-1">{formValues.humidity.toFixed(1)}%</p>
                   {errors.humidity && (
                     <p className="text-red-400 text-xs mt-1">{errors.humidity.message}</p>
                   )}
@@ -226,16 +187,8 @@ export default function PredictPage() {
                     type="number"
                     step="0.1"
                     {...register('previous_runoff', { valueAsNumber: true })}
-                    className="bg-white/5 border-white/10 text-white mb-2"
+                    className="bg-white/5 border-white/10 text-white"
                   />
-                  <Slider
-                    defaultValue={[30]}
-                    min={0}
-                    max={100}
-                    step={5}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-white/50 mt-1">{formValues.previous_runoff.toFixed(1)} mm</p>
                   {errors.previous_runoff && (
                     <p className="text-red-400 text-xs mt-1">{errors.previous_runoff.message}</p>
                   )}
