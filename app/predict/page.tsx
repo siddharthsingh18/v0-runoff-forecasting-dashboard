@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { predictionSchema, type PredictionData } from '@/lib/validators'
@@ -57,7 +57,7 @@ export default function PredictPage() {
   }
 
   // Update probability when form values change
-  React.useEffect(() => {
+  useEffect(() => {
     setFormValues(watchValues as any)
     const probability = calculateFloodProbability(watchValues as PredictionData)
     setFloodProbability(probability)
