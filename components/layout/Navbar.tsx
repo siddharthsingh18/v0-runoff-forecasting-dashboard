@@ -31,17 +31,26 @@ export function Navbar() {
               <Link href="/dashboard" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
                 Dashboard
               </Link>
+              <Link href="/map" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
+                Map
+              </Link>
+              <Link href="/alerts" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
+                Alerts
+              </Link>
+              <Link href="/impact" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
+                Impact
+              </Link>
               <Link href="/analytics" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
                 Analytics
-              </Link>
-              <Link href="/train" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
-                Train
               </Link>
               <Link href="/predict" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
                 Predict
               </Link>
-              <Link href="/models" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
-                Models
+              <Link href="/solutions" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
+                Solutions
+              </Link>
+              <Link href="/citizen-report" className="text-sm text-white/80 hover:text-cyan-400 transition-colors">
+                Reports
               </Link>
             </>
           )}

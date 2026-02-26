@@ -11,8 +11,10 @@ import { GlowButton } from '@/components/ui/GlowButton'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { Slider } from '@/components/ui/slider'
+import { PredictionGauge } from '@/components/prediction/PredictionGauge'
 import { motion } from 'framer-motion'
-import { Zap, TrendingUp } from 'lucide-react'
+import { Zap, TrendingUp, AlertTriangle, Droplets, Thermometer, Wind } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/lib/api'
 
@@ -20,11 +22,19 @@ export default function PredictPage() {
   const [isPredicting, setIsPredicting] = useState(false)
   const [prediction, setPrediction] = useState<number | null>(null)
   const [confidence, setConfidence] = useState<number | null>(null)
+  const [floodProbability, setFloodProbability] = useState(0)
+  const [formValues, setFormValues] = useState({
+    rainfall: 50,
+    temperature: 20,
+    humidity: 60,
+    previous_runoff: 30,
+  })
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
   } = useForm<PredictionData>({
     resolver: zodResolver(predictionSchema),
     defaultValues: {
@@ -34,6 +44,24 @@ export default function PredictPage() {
       previous_runoff: 30,
     },
   })
+
+  // Watch form values for real-time probability calculation
+  const watchValues = watch()
+  
+  // Calculate flood probability based on inputs
+  const calculateFloodProbability = (data: PredictionData) => {
+    const rainfallFactor = Math.min((data.rainfall / 300) * 40, 40)
+    const humiditySaturation = Math.max((data.humidity - 60) / 40, 0) * 30
+    const runoffFactor = Math.min((data.previous_runoff / 100) * 30, 30)
+    return Math.round(rainfallFactor + humiditySaturation + runoffFactor)
+  }
+
+  // Update probability when form values change
+  React.useEffect(() => {
+    setFormValues(watchValues as any)
+    const probability = calculateFloodProbability(watchValues as PredictionData)
+    setFloodProbability(probability)
+  }, [watchValues])
 
   const onSubmit = async (data: PredictionData) => {
     setIsPredicting(true)
@@ -70,68 +98,144 @@ export default function PredictPage() {
             </p>
           </motion.div>
 
+          {/* Real-time Flood Probability */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <SectionCard title="Real-Time Flood Risk Probability" delay={0.05}>
+              <div className="flex flex-col items-center">
+                <PredictionGauge
+                  probability={floodProbability}
+                  label="24h Flood Probability"
+                  severity={
+                    floodProbability < 20
+                      ? 'low'
+                      : floodProbability < 40
+                      ? 'medium'
+                      : floodProbability < 60
+                      ? 'high'
+                      : 'critical'
+                  }
+                />
+              </div>
+            </SectionCard>
+          </motion.div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <SectionCard title="Input Features" delay={0.1}>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <SectionCard title="Input Parameters" delay={0.1}>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                {/* Rainfall */}
                 <div>
-                  <Label htmlFor="rainfall" className="text-white mb-2 block text-sm">
-                    Rainfall (mm)
-                  </Label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Droplets className="w-4 h-4 text-cyan-400" />
+                    <Label htmlFor="rainfall" className="text-white text-sm">
+                      Rainfall (mm)
+                    </Label>
+                  </div>
                   <Input
                     id="rainfall"
                     type="number"
                     step="0.1"
                     {...register('rainfall', { valueAsNumber: true })}
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white/5 border-white/10 text-white mb-2"
                   />
+                  <Slider
+                    defaultValue={[50]}
+                    min={0}
+                    max={300}
+                    step={5}
+                    onValueChange={(val) => {
+                      register('rainfall', { valueAsNumber: true })
+                    }}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-white/50 mt-1">{formValues.rainfall.toFixed(1)} mm</p>
                   {errors.rainfall && (
                     <p className="text-red-400 text-xs mt-1">{errors.rainfall.message}</p>
                   )}
                 </div>
 
+                {/* Temperature */}
                 <div>
-                  <Label htmlFor="temperature" className="text-white mb-2 block text-sm">
-                    Temperature (°C)
-                  </Label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Thermometer className="w-4 h-4 text-orange-400" />
+                    <Label htmlFor="temperature" className="text-white text-sm">
+                      Temperature (°C)
+                    </Label>
+                  </div>
                   <Input
                     id="temperature"
                     type="number"
                     step="0.1"
                     {...register('temperature', { valueAsNumber: true })}
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white/5 border-white/10 text-white mb-2"
                   />
+                  <Slider
+                    defaultValue={[20]}
+                    min={0}
+                    max={50}
+                    step={1}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-white/50 mt-1">{formValues.temperature.toFixed(1)}°C</p>
                   {errors.temperature && (
                     <p className="text-red-400 text-xs mt-1">{errors.temperature.message}</p>
                   )}
                 </div>
 
+                {/* Humidity */}
                 <div>
-                  <Label htmlFor="humidity" className="text-white mb-2 block text-sm">
-                    Humidity (%)
-                  </Label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Wind className="w-4 h-4 text-blue-400" />
+                    <Label htmlFor="humidity" className="text-white text-sm">
+                      Humidity (%)
+                    </Label>
+                  </div>
                   <Input
                     id="humidity"
                     type="number"
                     step="0.1"
                     {...register('humidity', { valueAsNumber: true })}
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white/5 border-white/10 text-white mb-2"
                   />
+                  <Slider
+                    defaultValue={[60]}
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-white/50 mt-1">{formValues.humidity.toFixed(1)}%</p>
                   {errors.humidity && (
                     <p className="text-red-400 text-xs mt-1">{errors.humidity.message}</p>
                   )}
                 </div>
 
+                {/* Previous Runoff */}
                 <div>
-                  <Label htmlFor="previous_runoff" className="text-white mb-2 block text-sm">
-                    Previous Runoff (mm)
-                  </Label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                    <Label htmlFor="previous_runoff" className="text-white text-sm">
+                      Previous Runoff (mm)
+                    </Label>
+                  </div>
                   <Input
                     id="previous_runoff"
                     type="number"
                     step="0.1"
                     {...register('previous_runoff', { valueAsNumber: true })}
-                    className="bg-white/5 border-white/10 text-white"
+                    className="bg-white/5 border-white/10 text-white mb-2"
                   />
+                  <Slider
+                    defaultValue={[30]}
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-white/50 mt-1">{formValues.previous_runoff.toFixed(1)} mm</p>
                   {errors.previous_runoff && (
                     <p className="text-red-400 text-xs mt-1">{errors.previous_runoff.message}</p>
                   )}

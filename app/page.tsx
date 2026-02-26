@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useModelStore } from '@/store/useModelStore'
 import { GlowButton } from '@/components/ui/GlowButton'
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import {
   AlertTriangle,
   Cloud,
@@ -11,9 +12,49 @@ import {
   Shield,
   Droplets,
   Zap,
+  Map,
 } from 'lucide-react'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
+
+// Live counter component
+function LiveCounter({ label, value, color, icon: Icon }: { label: string; value: number; color: string; icon: any }) {
+  const [displayValue, setDisplayValue] = useState(0)
+
+  useEffect(() => {
+    let start = 0
+    const duration = 2000
+    const increment = value / (duration / 16)
+    let current = 0
+
+    const timer = setInterval(() => {
+      current += increment
+      if (current >= value) {
+        setDisplayValue(value)
+        clearInterval(timer)
+      } else {
+        setDisplayValue(Math.floor(current))
+      }
+    }, 16)
+
+    return () => clearInterval(timer)
+  }, [value])
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="flex flex-col items-center gap-2 p-4"
+    >
+      <Icon className={`w-8 h-8 ${color}`} />
+      <div className={`text-3xl font-bold bg-gradient-to-r ${color} bg-clip-text text-transparent`}>
+        {displayValue.toLocaleString()}
+      </div>
+      <p className="text-white/60 text-sm text-center">{label}</p>
+    </motion.div>
+  )
+}
 
 const features = [
   {
@@ -98,11 +139,24 @@ export default function HomePage() {
 
               <div className="flex gap-4 justify-center flex-wrap">
                 {isAuthenticated ? (
-                  <Link href="/dashboard">
-                    <GlowButton size="lg" glowIntensity="high">
-                      Go to Dashboard
-                    </GlowButton>
-                  </Link>
+                  <>
+                    <Link href="/dashboard">
+                      <GlowButton size="lg" glowIntensity="high">
+                        Go to Dashboard
+                      </GlowButton>
+                    </Link>
+                    <Link href="/map">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <button className="px-8 py-4 rounded-lg border border-aqua/50 text-white font-semibold hover:bg-aqua/10 transition-colors text-lg flex items-center gap-2">
+                          <Map className="w-5 h-5" />
+                          View Interactive Map
+                        </button>
+                      </motion.div>
+                    </Link>
+                  </>
                 ) : (
                   <>
                     <Link href="/login">
@@ -121,6 +175,19 @@ export default function HomePage() {
                   </>
                 )}
               </div>
+            </motion.div>
+
+            {/* Live Counters */}
+            <motion.div
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.3 }}
+              className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 bg-white/5 border border-white/10 rounded-2xl p-8"
+            >
+              <LiveCounter label="Active Stations" value={250} color="from-aqua to-cyan-400" icon={Droplets} />
+              <LiveCounter label="Data Points/Hour" value={15000} color="from-cyan-400 to-blue-400" icon={TrendingUp} />
+              <LiveCounter label="Model Accuracy" value={94} color="from-blue-400 to-purple-400" icon={Shield} />
+              <LiveCounter label="Response Time (sec)" value={5} color="from-purple-400 to-pink-400" icon={Zap} />
             </motion.div>
           </div>
         </section>

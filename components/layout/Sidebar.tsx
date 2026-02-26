@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, Brain, Database, Zap, Settings, Home } from 'lucide-react'
+import { BarChart3, Brain, Database, Zap, Settings, Home, Map, AlertTriangle, Droplets, CheckSquare, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const navigationItems = [
@@ -12,14 +12,24 @@ const navigationItems = [
     href: '/dashboard',
   },
   {
+    icon: Map,
+    label: 'Flood Map',
+    href: '/map',
+  },
+  {
+    icon: AlertTriangle,
+    label: 'Alerts',
+    href: '/alerts',
+  },
+  {
+    icon: Droplets,
+    label: 'Impact',
+    href: '/impact',
+  },
+  {
     icon: BarChart3,
     label: 'Analytics',
     href: '/analytics',
-  },
-  {
-    icon: Zap,
-    label: 'Training',
-    href: '/train',
   },
   {
     icon: Brain,
@@ -27,14 +37,19 @@ const navigationItems = [
     href: '/predict',
   },
   {
-    icon: Database,
-    label: 'Models',
-    href: '/models',
+    icon: CheckSquare,
+    label: 'Solutions',
+    href: '/solutions',
+  },
+  {
+    icon: Users,
+    label: 'Reports',
+    href: '/citizen-report',
   },
   {
     icon: Database,
-    label: 'Dataset',
-    href: '/dataset',
+    label: 'Models',
+    href: '/models',
   },
   {
     icon: Settings,

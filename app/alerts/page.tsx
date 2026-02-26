@@ -5,14 +5,17 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { SectionCard } from '@/components/ui/SectionCard'
 import { AlertHistory } from '@/components/alerts/AlertHistory'
+import { AlertCommandCenter } from '@/components/alerts/AlertCommandCenter'
 import { motion } from 'framer-motion'
 import { AlertEvent } from '@/lib/types'
 import { useModelStore } from '@/store/useModelStore'
-import { AlertTriangle, AlertCircle, TrendingUp } from 'lucide-react'
+import { AlertTriangle, AlertCircle, TrendingUp, Download } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 export default function AlertsPage() {
   const { alertHistory, activeAlerts } = useModelStore()
   const [displayAlerts, setDisplayAlerts] = useState<AlertEvent[]>([])
+  const [currentAlertLevel, setCurrentAlertLevel] = useState(0)
 
   useEffect(() => {
     // Combine active and historical alerts for display
@@ -21,6 +24,33 @@ export default function AlertsPage() {
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     ))
   }, [activeAlerts, alertHistory])
+
+  const handleAlertLevelChange = (level: number) => {
+    setCurrentAlertLevel(level)
+  }
+
+  const handleDownloadReport = () => {
+    // PDF export functionality
+    const reportContent = `
+FLOOD RISK ALERT REPORT
+Generated: ${new Date().toLocaleString()}
+
+Current Alert Level: ${['All Clear', 'Caution', 'Warning', 'Emergency'][currentAlertLevel]}
+Critical Alerts: ${activeAlerts.filter((a) => a.severity === 'level2').length}
+Warning Alerts: ${activeAlerts.filter((a) => a.severity === 'level1').length}
+Total 24h Alerts: ${displayAlerts.length}
+
+RECENT ALERTS:
+${displayAlerts.slice(0, 5).map((a) => `- ${a.timestamp}: ${a.message} (${a.severity})`).join('\n')}
+    `
+    const element = document.createElement('a')
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportContent))
+    element.setAttribute('download', 'flood_alert_report.txt')
+    element.style.display = 'none'
+    document.body.appendChild(element)
+    element.click()
+    document.body.removeChild(element)
+  }
 
   const criticalCount = activeAlerts.filter((a) => a.severity === 'level2').length
   const warningCount = activeAlerts.filter((a) => a.severity === 'level1').length
@@ -41,6 +71,30 @@ export default function AlertsPage() {
             <h1 className="text-4xl font-bold text-white mb-2">Alert Management</h1>
             <p className="text-white/60">Monitor and manage flood risk alerts</p>
           </motion.div>
+
+          {/* Government Emergency Alert Command Center */}
+          <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-aqua/30 rounded-lg p-8">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <AlertCircle className="w-6 h-6 text-aqua" />
+              National Flood Alert Command Center
+            </h2>
+            <AlertCommandCenter
+              currentLevel={currentAlertLevel}
+              onSimulateAlert={handleAlertLevelChange}
+            />
+          </div>
+
+          {/* Download Report */}
+          <div className="flex justify-end">
+            <Button
+              onClick={handleDownloadReport}
+              className="flex items-center gap-2"
+              variant="outline"
+            >
+              <Download className="w-4 h-4" />
+              Download Alert Report
+            </Button>
+          </div>
 
           {/* Active Alerts Summary */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
