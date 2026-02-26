@@ -118,9 +118,17 @@ export function LoginForm() {
           </GlowButton>
         </form>
 
-        <p className="text-center text-white/60 text-xs mt-6">
-          Demo credentials: admin@example.com / password123
-        </p>
+        <div className="mt-8 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-lg">
+          <p className="text-center text-white/80 text-xs font-semibold mb-2">
+            Demo Credentials
+          </p>
+          <p className="text-center text-white/60 text-xs mb-1">
+            Email: <span className="text-cyan-400 font-mono">any@email.com</span>
+          </p>
+          <p className="text-center text-white/60 text-xs">
+            Password: <span className="text-cyan-400 font-mono">password123</span>
+          </p>
+        </div>
       </div>
     </motion.div>
   )
