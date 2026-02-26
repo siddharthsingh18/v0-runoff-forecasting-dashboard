@@ -100,3 +100,80 @@ export interface LoginCredentials {
   email: string
   password: string
 }
+
+// Flood & Runoff Monitoring Types
+export interface SensorReading {
+  id: string
+  location: string
+  latitude: number
+  longitude: number
+  rainfall: number
+  drainage: number
+  runoff_rate: number
+  risk_score: number
+  timestamp: string
+  water_level?: number
+  soil_saturation?: number
+  temperature?: number
+}
+
+export interface AlertEvent {
+  id: string
+  timestamp: string
+  location: string
+  severity: 'level1' | 'level2'
+  message: string
+  runoff_value: number
+  risk_percentage: number
+  status: 'active' | 'dismissed' | 'resolved'
+  recommendations?: string[]
+}
+
+export interface EnvironmentalImpact {
+  soil_erosion: number
+  water_pollution: number
+  crop_destruction_risk: number
+  infrastructure_damage_risk: number
+  human_life_risk: 'Low' | 'Medium' | 'High'
+  timestamp: string
+}
+
+export interface FloodSolution {
+  id: string
+  title: string
+  category: 'structural' | 'nature_based' | 'technology'
+  description: string
+  effectiveness: number
+  cost: 'Low' | 'Medium' | 'High'
+  implementation_time: string
+  impact_description: string
+  co_benefits?: string[]
+}
+
+export interface FloodPrediction {
+  probability_6h: number
+  probability_24h: number
+  probability_7d: number
+  severity_level: 'low' | 'medium' | 'high'
+  timestamp: string
+  trend: 'increasing' | 'decreasing' | 'stable'
+}
+
+export interface AuditLog {
+  id: string
+  timestamp: string
+  user_email: string
+  action: string
+  resource: string
+  details: string
+  status: 'success' | 'failure'
+}
+
+export interface RealtimeData {
+  current_runoff: number
+  rainfall_24h: number
+  drainage_rate: number
+  risk_percentage: number
+  alert_count: number
+  last_update: string
+}
